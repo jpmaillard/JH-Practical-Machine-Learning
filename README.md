@@ -3,7 +3,7 @@
 You can find the htlm version of the project here:
 http://rpubs.com/jpmaillard/538477
 
-For purpose of gaining space on the project report I omited to describe the models used in here. Here you'll find a brief description of each model.
+For purpose of gaining space on the project report I decided to describe my approach here.
 
 ## The Model Process:
 
