@@ -92,7 +92,7 @@ validControl <- trainControl(method = "cv", number = 5)
 
 Let's create the models:
 
-#### The Linear determinant model ("lda"):
+#### The Linear Discriminant Analysis model ("lda"):
 
 ```{r}
 ldaModel <- train(classe ~., method = "lda", data = training, trControl = validControl)
