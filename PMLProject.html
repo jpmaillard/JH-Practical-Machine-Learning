@@ -484,7 +484,7 @@ testing  &lt;- training0[-inTrain, ]</code></pre>
 <pre class="r"><code>validControl &lt;- trainControl(method = &quot;cv&quot;, number = 5)</code></pre>
 <p>Let’s create the models:</p>
 <div id="the-linear-determinant-model-lda" class="section level4">
-<h4>The Linear determinant model (“lda”):</h4>
+<h4>The Linear Discrimant Analysis model (“lda”):</h4>
 <pre class="r"><code>ldaModel &lt;- train(classe ~., method = &quot;lda&quot;, data = training, trControl = validControl)
 ldaPredict &lt;- predict(ldaModel, newdata = testing)
 ldaConfusionMatrix &lt;- confusionMatrix(ldaPredict, testing$classe)
