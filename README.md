@@ -22,8 +22,9 @@ Now it was time to split the training0 data into a training (60%) data set to im
 By using the trainControl() function of the caret package we defined a variable "validControl" to be the cross-validation that will be used in each model.
 
 ### 5. Implement the 3 models:
-For the 3 models we first create the model and assign it to a variable, then we used this variable to calculate the prediction on the testing data set. We assign this prediction to a variable. This variable is used to create the confusion Matrix by comparing the values creating by this variable and the model$classe variable values. We extract the accuracy rate out the confusion matrix.
-The out of sample error rate is then calculate thanks to the accuracy rate.
+For the 3 models we first create the model via the train() function and assign it to a variable, then we used this variable to calculate the prediction on the testing data set via the predict() function. We assign this prediction to a variable. This variable is used to create the confusion Matrix by comparing the values creating by this variable and the model$classe variable values via the confusionMatrix() function. We extract the accuracy rate out the confusion matrix and assign it to a variable. The out of sample error rate is then calculate thanks to the accuracy rate and assign to a variable.
+
+Note: all function here used are from the caret package.
 
 ### 6. We Compare the models and choose the best one:
 We create a table containing for each model the accuracy rate and the out of sample error rates.
