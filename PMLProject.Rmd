@@ -1,0 +1,161 @@
+---
+title: "Practical Machine Learning Project"
+author: "Jean-Philippe Maillard"
+date: "10/9/2019"
+output: html_document
+---
+
+## Background information
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+## Data Preparation
+
+```{r include=FALSE, echo=FALSE}
+
+library(caret)
+library(dplyr)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(rattle)
+```
+
+### The Data sets
+
+We can find the 2 data sets training and testing at the following web  adresses:
+
+* [Training Data](https://d396qusza40orc.cloudfront.net/predmachlearn/pmltraining.csv).
+
+* [Test Data](https://d396qusza40orc.cloudfront.net/predmachlearn/pmltesting.csv).
+
+### Data set preparation
+
+```{r echo=FALSE, include=FALSE}
+setwd("~/Coursera/Data Science - JH/8 Practical Machine Learning/Week 4")
+```
+
+First we load the two data set "training" and "testing" into R. We assume that the data are in the working directory.
+
+```{r}
+training0 <- read.csv("training.csv", na.strings = c("NA", ""))
+test <- read.csv("testing.csv", na.strings = c("NA", ""))
+dimTrain<- dim(training0)
+dimTest <- dim(test)
+dimTrain; dimTest
+```
+
+Let's first clean the two data set from all columns that contains missing values
+```{r}
+training0 <- training0[, colSums(is.na(training0)) == 0]
+test <- test[, colSums(is.na(test)) == 0]
+dimTrain2 <- dim(training0)
+dimTest2 <- dim(test)
+dimTrain2; dimTest2
+```
+
+Let's observe the training data set quickly to see if there are variables we can eliminate from the data set to make it more workable.
+
+```{r}
+str(training0)
+```
+
+We can see as well that the first 7 variables are not so important and could be omited in our analysis, let's remove them from our training set
+
+```{r}
+training0 <- training0 %>% select(-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+test <- test %>% select(-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+dim(training0); dim(test)
+```
+
+
+Finally let's create the data sets we're going to use to determine which machine learning algorithm has the best accuracy rate. For this we will use the training0 set and split it into a training set (60%) and a testing set (40%) as such:
+
+```{r}
+set.seed(23456)
+inTrain  <- createDataPartition(training0$classe, p=0.60, list=FALSE)
+training <- training0[inTrain, ]
+testing  <- training0[-inTrain, ]
+
+```
+
+
+## The models
+
+Here we are going to look at 3 differents algorithms (lda, rpart, rtf) and pick the ones with the best. We will use each model on the training data set and predict on the testing data set in order to calculate the accuracy level. The one with the greater accuracy level will be used in the final step of this project. The outcome variable is "classe".
+
+We will use arbitratirery a cross-validation of 5.
+
+```{r}
+validControl <- trainControl(method = "cv", number = 5)
+```
+
+Let's create the models:
+
+#### The Linear determinant model ("lda"):
+
+```{r}
+ldaModel <- train(classe ~., method = "lda", data = training, trControl = validControl)
+ldaPredict <- predict(ldaModel, newdata = testing)
+ldaConfusionMatrix <- confusionMatrix(ldaPredict, testing$classe)
+ldaAccuracy <- ldaConfusionMatrix$overall[1]
+ldaOutOfSampleError <- 1 - ldaAccuracy
+```
+
+
+#### The decision trees with "Cart" model ("rpart"):
+
+```{r}
+rpartModel <- train(classe ~., method = "rpart", data = training, trControl = validControl)
+rpartPredict <- predict(rpartModel, newdata = testing)
+rpartConfusionMatrix <- confusionMatrix(rpartPredict, testing$classe)
+rpartAccuracy <- rpartConfusionMatrix$overall[1]
+rpartOutOfSampleError <- 1 - rpartAccuracy
+```
+
+#### The random forest decision tree model ("rf"):
+
+```{r}
+rfModel <- train(classe ~., method = "rf", data = training, trControl = validControl)
+rfPredict <- predict(rfModel, newdata = testing)
+rfConfusionMatrix <- confusionMatrix(rfPredict, testing$classe)
+rfAccuracy <- rfConfusionMatrix$overall[1]
+rfOutOfSampleError <- 1 - rfAccuracy
+
+```
+
+
+## The best model
+
+Let's look at all the accuracies of these models together.
+```{r}
+models = c("lda", "cart", "rf")
+accuracies <- c(ldaAccuracy, rpartAccuracy, rfAccuracy) 
+outOfSamleErrors <- c(ldaOutOfSampleError, rpartOutOfSampleError, rfOutOfSampleError) 
+conclusions <- data.frame(models, accuracies, outOfSamleErrors)
+conclusions
+```
+
+
+We can conclude that the random forest is the best model.
+
+
+## Predictions
+
+As the last steps of our analysis we will use the winner to predict on the intial test data set that has not been used yet.
+
+Here are the calculations and results obtained:
+
+```{r}
+validationModel <- predict(rfModel, newdata=test)
+ValidationPredictionResults <- data.frame(
+  problem_id=test$problem_id,
+  predicted=validationModel
+)
+print(ValidationPredictionResults)
+
+
+```
+
+
+
